@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import './App.css';
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom"
+import Login from "./Login";
+import Home from "./Home"
+import { useEffect } from 'react';
+import { getAuth } from 'firebase/auth'
+import { getFirestore } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
+import { getStorage } from "firebase/storage";
+import { firebaseConfig } from "./firebase-config";
 
 function App() {
+  const navigate = useNavigate()
+  const user = localStorage.getItem("codepenuid");
+
+
+  useEffect(() => {
+    if (user === null) navigate("/login", { replace: true });
+    else {
+      navigate("/", { replace: true });
+
+    }
+  }, [])
+
+  const ProtectedRoute = ({ children }) => {
+    if (user === null) {
+      return <Navigate to="/login" />;
+    }
+
+    return children
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/login" exact element={<Login />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
+export const firebaseApp = initializeApp(firebaseConfig);
+export const auth = getAuth();
+export const storage = getStorage();
+export const firebaseDB = getFirestore();
 
 export default App;
